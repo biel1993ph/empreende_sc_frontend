@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:empreende_sc_frontend/data/empreendimento_database.dart';
 import 'package:empreende_sc_frontend/data/sc_municipios.dart';
+import 'package:empreende_sc_frontend/models/empreendimento.dart';
 
 class EmpreendimentoFormPage extends StatefulWidget {
   const EmpreendimentoFormPage({super.key});
@@ -28,7 +30,9 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
   ];
 
   String? _segmentoSelecionado;
+  String _municipioDigitado = '';
   bool _statusAtivo = true;
+  bool _isSaving = false;
 
   String _normalizeText(String value) {
     const from = 'áàâãäéèêëíìîïóòôõöúùûüçÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇ';
@@ -67,6 +71,88 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
     return null;
   }
 
+  String? _requiredMaxLengthValidator(String? value) {
+    final trimmed = value?.trim() ?? '';
+
+    if (trimmed.isEmpty) {
+      return 'Campo obrigatório.';
+    }
+
+    return _maxLengthValidator(value);
+  }
+
+  String? _municipioValidator(String? value) {
+    final trimmed = value?.trim() ?? '';
+
+    if (trimmed.isEmpty) {
+      return 'Campo obrigatório.';
+    }
+
+    if (!scMunicipios.contains(trimmed)) {
+      return 'Selecione um município válido da lista.';
+    }
+
+    return null;
+  }
+
+  String? _segmentoValidator(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Campo obrigatório.';
+    }
+
+    return null;
+  }
+
+  Future<void> _salvarEmpreendimento() async {
+    final isValid = _formKey.currentState?.validate() ?? false;
+    if (!isValid) {
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    final empreendimento = Empreendimento(
+      nomeEmpreendimento: _nomeEmpreendimentoController.text.trim(),
+      nomeResponsavel: _nomeResponsavelController.text.trim(),
+      municipio: _municipioDigitado.trim(),
+      segmento: _segmentoSelecionado!.trim(),
+      contato: _contatoController.text.trim(),
+      statusAtivo: _statusAtivo,
+    );
+
+    try {
+      await EmpreendimentoDatabase.instance.insertEmpreendimento(
+        empreendimento,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Empreendimento salvo com sucesso.')),
+      );
+
+      Navigator.of(context).pop();
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erro ao salvar empreendimento.')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
+  }
+
   @override
   void dispose() {
     _nomeEmpreendimentoController.dispose();
@@ -97,7 +183,7 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
                   inputFormatters: [
                     LengthLimitingTextInputFormatter(_maxFieldLength),
                   ],
-                  validator: _maxLengthValidator,
+                  validator: _requiredMaxLengthValidator,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: const InputDecoration(
                     labelText: 'Nome do empreendimento',
@@ -110,7 +196,7 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
                   inputFormatters: [
                     LengthLimitingTextInputFormatter(_maxFieldLength),
                   ],
-                  validator: _maxLengthValidator,
+                  validator: _requiredMaxLengthValidator,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: const InputDecoration(
                     labelText: 'Nome do(a) empreendedor(a) responsável',
@@ -120,6 +206,7 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
                 const SizedBox(height: 12),
                 Autocomplete<String>(
                   optionsBuilder: (TextEditingValue textEditingValue) {
+                    _municipioDigitado = textEditingValue.text;
                     final query = _normalizeText(textEditingValue.text);
 
                     if (query.isEmpty) {
@@ -131,6 +218,9 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
                           return _normalizeText(municipio).contains(query);
                         })
                         .take(20);
+                  },
+                  onSelected: (municipio) {
+                    _municipioDigitado = municipio;
                   },
                   fieldViewBuilder:
                       (
@@ -146,6 +236,11 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
                             labelText: 'Município de Santa Catarina',
                             border: OutlineInputBorder(),
                           ),
+                          validator: _municipioValidator,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          onChanged: (value) {
+                            _municipioDigitado = value;
+                          },
                         );
                       },
                   optionsViewBuilder: (context, onSelected, options) => Align(
@@ -175,6 +270,8 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _segmentoSelecionado,
+                  validator: _segmentoValidator,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: const InputDecoration(
                     labelText: 'Segmento de atuação',
                     border: OutlineInputBorder(),
@@ -218,6 +315,14 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
                   },
                   title: Text('Status: ${_statusAtivo ? 'Ativo' : 'Inativo'}'),
                   controlAffinity: ListTileControlAffinity.leading,
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isSaving ? null : _salvarEmpreendimento,
+                    child: Text(_isSaving ? 'Salvando...' : 'Salvar'),
+                  ),
                 ),
               ],
             ),
