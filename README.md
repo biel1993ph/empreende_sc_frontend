@@ -75,3 +75,7 @@ flutter test
 - O banco SQLite é criado automaticamente na primeira execução.
 - A listagem inicial é recarregada após criar, editar ou excluir um empreendimento.
 
+
+### Video de Apresentação
+
+- https://youtu.be/fPPlOZT6zl0
