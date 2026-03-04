@@ -117,12 +117,31 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            item.nomeEmpreendimento,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  item.nomeEmpreendimento,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              const Icon(
+                                Icons.edit_outlined,
+                                size: 18,
+                                color: santaCatarinaRed,
+                              ),
+                              const SizedBox(width: 4),
+                              const Text(
+                                'Editar',
+                                style: TextStyle(
+                                  color: santaCatarinaRed,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 6),
                           Text('Responsável: ${item.nomeResponsavel}'),
