@@ -2,7 +2,7 @@
 
 ## Descrição da solução desenvolvida
 
-Este projeto é uma aplicação Flutter para cadastro e gestão de empreendimentos de Santa Catarina.
+Este projeto é uma aplicação Flutter (Android e iOS) para cadastro e gestão de empreendimentos de Santa Catarina.
 
 A solução permite:
 
@@ -48,7 +48,7 @@ test/
 ### Pré-requisitos
 
 - Flutter SDK instalado
-- Dispositivo/emulador configurado (Android, iOS ou Web)
+- Dispositivo/emulador configurado (Android ou iOS)
 
 ### Passos
 
@@ -75,5 +75,3 @@ flutter test
 - O banco SQLite é criado automaticamente na primeira execução.
 - A listagem inicial é recarregada após criar, editar ou excluir um empreendimento.
 
-
-### Observações
