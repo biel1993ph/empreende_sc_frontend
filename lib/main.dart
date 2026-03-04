@@ -46,6 +46,53 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Empreendimento> _empreendimentos = const [];
   String? _erroCarregamento;
 
+  Future<void> _confirmarExclusao(Empreendimento item) async {
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Excluir empreendimento'),
+          content: Text('Deseja excluir "${item.nomeEmpreendimento}"?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Excluir'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmado != true || item.id == null) {
+      return;
+    }
+
+    try {
+      await EmpreendimentoDatabase.instance.deleteEmpreendimento(item.id!);
+      await _loadEmpreendimentos();
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Empreendimento excluído com sucesso.')),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erro ao excluir empreendimento.')),
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -140,6 +187,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                   color: santaCatarinaRed,
                                   fontWeight: FontWeight.w600,
                                 ),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: santaCatarinaRed,
+                                ),
+                                tooltip: 'Excluir',
+                                onPressed: () => _confirmarExclusao(item),
                               ),
                             ],
                           ),

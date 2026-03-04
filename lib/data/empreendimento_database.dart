@@ -62,6 +62,12 @@ class EmpreendimentoDatabase {
     );
   }
 
+  Future<int> deleteEmpreendimento(int id) async {
+    final db = await database;
+
+    return db.delete(_tableName, where: 'id = ?', whereArgs: [id]);
+  }
+
   Future<List<Empreendimento>> getEmpreendimentos() async {
     final db = await database;
     final result = await db.query(_tableName, orderBy: 'id DESC');
