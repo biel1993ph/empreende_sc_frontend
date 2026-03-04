@@ -102,27 +102,38 @@ class _MyHomePageState extends State<MyHomePage> {
                 final item = _empreendimentos[index];
 
                 return Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.nomeEmpreendimento,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
+                  child: InkWell(
+                    onTap: () async {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) =>
+                              EmpreendimentoFormPage(empreendimento: item),
+                        ),
+                      );
+                      await _loadEmpreendimentos();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.nomeEmpreendimento,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text('Responsável: ${item.nomeResponsavel}'),
-                        Text('Município: ${item.municipio}'),
-                        Text('Segmento: ${item.segmento}'),
-                        Text('Contato: ${item.contato}'),
-                        Text(
-                          'Status: ${item.statusAtivo ? 'Ativo' : 'Inativo'}',
-                        ),
-                      ],
+                          const SizedBox(height: 6),
+                          Text('Responsável: ${item.nomeResponsavel}'),
+                          Text('Município: ${item.municipio}'),
+                          Text('Segmento: ${item.segmento}'),
+                          Text('Contato: ${item.contato}'),
+                          Text(
+                            'Status: ${item.statusAtivo ? 'Ativo' : 'Inativo'}',
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );

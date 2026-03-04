@@ -6,7 +6,9 @@ import 'package:empreende_sc_frontend/data/sc_municipios.dart';
 import 'package:empreende_sc_frontend/models/empreendimento.dart';
 
 class EmpreendimentoFormPage extends StatefulWidget {
-  const EmpreendimentoFormPage({super.key});
+  const EmpreendimentoFormPage({super.key, this.empreendimento});
+
+  final Empreendimento? empreendimento;
 
   @override
   State<EmpreendimentoFormPage> createState() => _EmpreendimentoFormPageState();
@@ -33,6 +35,23 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
   String _municipioDigitado = '';
   bool _statusAtivo = true;
   bool _isSaving = false;
+
+  bool get _isEditMode => widget.empreendimento != null;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final empreendimento = widget.empreendimento;
+    if (empreendimento != null) {
+      _nomeEmpreendimentoController.text = empreendimento.nomeEmpreendimento;
+      _nomeResponsavelController.text = empreendimento.nomeResponsavel;
+      _contatoController.text = empreendimento.contato;
+      _segmentoSelecionado = empreendimento.segmento;
+      _municipioDigitado = empreendimento.municipio;
+      _statusAtivo = empreendimento.statusAtivo;
+    }
+  }
 
   String _normalizeText(String value) {
     const from = 'áàâãäéèêëíìîïóòôõöúùûüçÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇ';
@@ -114,6 +133,7 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
     });
 
     final empreendimento = Empreendimento(
+      id: widget.empreendimento?.id,
       nomeEmpreendimento: _nomeEmpreendimentoController.text.trim(),
       nomeResponsavel: _nomeResponsavelController.text.trim(),
       municipio: _municipioDigitado.trim(),
@@ -123,16 +143,28 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
     );
 
     try {
-      await EmpreendimentoDatabase.instance.insertEmpreendimento(
-        empreendimento,
-      );
+      if (_isEditMode) {
+        await EmpreendimentoDatabase.instance.updateEmpreendimento(
+          empreendimento,
+        );
+      } else {
+        await EmpreendimentoDatabase.instance.insertEmpreendimento(
+          empreendimento,
+        );
+      }
 
       if (!mounted) {
         return;
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Empreendimento salvo com sucesso.')),
+        SnackBar(
+          content: Text(
+            _isEditMode
+                ? 'Empreendimento atualizado com sucesso.'
+                : 'Empreendimento salvo com sucesso.',
+          ),
+        ),
       );
 
       Navigator.of(context).pop();
@@ -165,8 +197,8 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Novo Empreendimento',
+        title: Text(
+          _isEditMode ? 'Editar Empreendimento' : 'Novo Empreendimento',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
         ),
       ),
@@ -205,6 +237,7 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
                 ),
                 const SizedBox(height: 12),
                 Autocomplete<String>(
+                  initialValue: TextEditingValue(text: _municipioDigitado),
                   optionsBuilder: (TextEditingValue textEditingValue) {
                     _municipioDigitado = textEditingValue.text;
                     final query = _normalizeText(textEditingValue.text);
@@ -321,7 +354,11 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isSaving ? null : _salvarEmpreendimento,
-                    child: Text(_isSaving ? 'Salvando...' : 'Salvar'),
+                    child: Text(
+                      _isSaving
+                          ? 'Salvando...'
+                          : (_isEditMode ? 'Atualizar' : 'Salvar'),
+                    ),
                   ),
                 ),
               ],
