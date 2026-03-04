@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:empreende_sc_frontend/data/sc_municipios.dart';
 
@@ -10,6 +11,8 @@ class EmpreendimentoFormPage extends StatefulWidget {
 }
 
 class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
+  static const int _maxFieldLength = 255;
+
   final _formKey = GlobalKey<FormState>();
 
   final _nomeEmpreendimentoController = TextEditingController();
@@ -35,6 +38,33 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
       normalized = normalized.replaceAll(from[index], to[index]);
     }
     return normalized.toLowerCase().trim();
+  }
+
+  String? _maxLengthValidator(String? value) {
+    if (value != null && value.length > _maxFieldLength) {
+      return 'Máximo de $_maxFieldLength caracteres.';
+    }
+    return null;
+  }
+
+  String? _emailValidator(String? value) {
+    final maxLengthError = _maxLengthValidator(value);
+    if (maxLengthError != null) {
+      return maxLengthError;
+    }
+
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+
+    final email = value.trim();
+    final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+
+    if (!emailRegex.hasMatch(email)) {
+      return 'Informe um e-mail válido.';
+    }
+
+    return null;
   }
 
   @override
@@ -64,6 +94,11 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
               children: [
                 TextFormField(
                   controller: _nomeEmpreendimentoController,
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(_maxFieldLength),
+                  ],
+                  validator: _maxLengthValidator,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: const InputDecoration(
                     labelText: 'Nome do empreendimento',
                     border: OutlineInputBorder(),
@@ -72,6 +107,11 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _nomeResponsavelController,
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(_maxFieldLength),
+                  ],
+                  validator: _maxLengthValidator,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: const InputDecoration(
                     labelText: 'Nome do(a) empreendedor(a) responsável',
                     border: OutlineInputBorder(),
@@ -156,6 +196,12 @@ class _EmpreendimentoFormPageState extends State<EmpreendimentoFormPage> {
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _contatoController,
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(_maxFieldLength),
+                  ],
+                  validator: _emailValidator,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
                     labelText: 'E-mail ou meio de contato',
                     border: OutlineInputBorder(),
