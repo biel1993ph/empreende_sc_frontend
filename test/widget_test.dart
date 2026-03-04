@@ -15,6 +15,7 @@ void main() {
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
 
     expect(find.text('EMPREENDEDORISMO SC'), findsOneWidget);
     expect(find.text('Novo Empreendimento'), findsNothing);

@@ -50,4 +50,11 @@ class EmpreendimentoDatabase {
     final db = await database;
     return db.insert(_tableName, empreendimento.toMap());
   }
+
+  Future<List<Empreendimento>> getEmpreendimentos() async {
+    final db = await database;
+    final result = await db.query(_tableName, orderBy: 'id DESC');
+
+    return result.map(Empreendimento.fromMap).toList();
+  }
 }

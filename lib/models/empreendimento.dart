@@ -17,6 +17,18 @@ class Empreendimento {
   final String contato;
   final bool statusAtivo;
 
+  factory Empreendimento.fromMap(Map<String, Object?> map) {
+    return Empreendimento(
+      id: map['id'] as int?,
+      nomeEmpreendimento: map['nome_empreendimento'] as String,
+      nomeResponsavel: map['nome_responsavel'] as String,
+      municipio: map['municipio'] as String,
+      segmento: map['segmento'] as String,
+      contato: map['contato'] as String,
+      statusAtivo: (map['status_ativo'] as int) == 1,
+    );
+  }
+
   Map<String, Object?> toMap() {
     return {
       'id': id,
