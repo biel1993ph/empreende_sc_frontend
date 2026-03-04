@@ -51,6 +51,17 @@ class EmpreendimentoDatabase {
     return db.insert(_tableName, empreendimento.toMap());
   }
 
+  Future<int> updateEmpreendimento(Empreendimento empreendimento) async {
+    final db = await database;
+
+    return db.update(
+      _tableName,
+      empreendimento.toMap(),
+      where: 'id = ?',
+      whereArgs: [empreendimento.id],
+    );
+  }
+
   Future<List<Empreendimento>> getEmpreendimentos() async {
     final db = await database;
     final result = await db.query(_tableName, orderBy: 'id DESC');
